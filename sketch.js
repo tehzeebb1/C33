@@ -3,17 +3,24 @@ const World= Matter.World;
 const Bodies = Matter.Bodies;
 const Constraint = Matter.Constraint;
 
+var birds = [];
 var engine, world;
 var box1, pig1,pig3;
 var backgroundImg,platform;
 var bird, slingshot;
+var flySou, collideSou;
 
 var gameState = "onSling";
 var bg = "sprites/bg1.png";
 var score = 0;
 
 function preload() {
-    getBackgroundImg();
+    //getBackgroundImg();
+
+    backgroundImg=loadImage("/sprites/bg.png")
+    flySou=loadSound("Fly.mp3")
+    collideSou=loadSound("Collide.mp3")
+
 }
 
 function setup(){
@@ -42,12 +49,19 @@ function setup(){
 
     bird = new Bird(200,50);
 
+    bird1 = new Bird(150,170);
+    bird2 = new Bird(100,170);
+    bird3 = new Bird(50,170);
+ birds.push(bird3)
+ birds.push(bird2)
+ birds.push(bird1)
+ birds.push(bird)
     //log6 = new Log(230,180,80, PI/2);
     slingshot = new SlingShot(bird.body,{x:200, y:50});
 }
 
 function draw(){
-    if(backgroundImg)
+   
         background(backgroundImg);
     
         noStroke();
@@ -78,23 +92,41 @@ function draw(){
     platform.display();
     //log6.display();
     slingshot.display();    
+
+    bird1.display();
+    bird2.display();
+    bird3.display();
 }
 
 function mouseDragged(){
-    //if (gameState!=="launched"){
-        Matter.Body.setPosition(bird.body, {x: mouseX , y: mouseY});
-    //}
+    if (gameState!=="launched"){
+        Matter.Body.setPosition(birds[birds.length-1].body, {x: mouseX , y: mouseY});
+        Matter.Body.applyForce(birds[birds.length-1].body,birds[birds.length-1].body.position ,{x: 5 , y: -5});
+    }
 }
 
 
 function mouseReleased(){
     slingshot.fly();
+    flySou.play();
+    birds.pop();
     gameState = "launched";
 }
 
 function keyPressed(){
-    if(keyCode === 32){
-       slingshot.attach(bird.body);
+    if(keyCode === 32 && gameState==="launched"){
+        collideSou.play();
+        if(birds.length>=0)
+        {
+            
+            Matter.Body.setPosition(birds[birds.length-1].body, {x: 200, y: 50});
+            slingshot.attach(birds[birds.length-1].body);
+            bird.trajectory =[];
+            bird1.trajectory =[];
+            bird2.trajectory =[];
+            bird3.trajectory =[];
+            gameState = "onSling"
+        }
     }
 }
 
